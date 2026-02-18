@@ -1,32 +1,32 @@
 import pandas as pd
-import sys
-import os
-
-# プロジェクトルート（直下のpandas_ta）を検索パスに追加
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-try:
-    import pandas_ta as ta
-except ImportError:
-    print("Error: pandas_ta could not be imported. Please ensure it is in the project root.")
+import numpy as np
 
 def generate_features(df):
+    # データを時間順に並び替え
     df = df.sort_values('event_time').copy()
-    df.set_index(pd.DatetimeIndex(df['event_time']), inplace=True)
     
-    # 以前作成した指標計算（RSI, MACD, BBands等）
-    df['sma_20'] = ta.sma(df['close_price'], length=20)
-    df['rsi'] = ta.rsi(df['close_price'], length=14)
+    # 1. シンプルな移動平均 (SMA)
+    # pandas_ta.sma(close, length=20) と同じ計算です
+    df['sma_20'] = df['close_price'].rolling(window=20).mean()
     
-    macd = ta.macd(df['close_price'])
-    df = pd.concat([df, macd], axis=1)
+    # 2. RSI (相対力指数) の自作計算
+    delta = df['close_price'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    df['rsi'] = 100 - (100 / (1 + rs))
     
-    bbands = ta.bbands(df['close_price'], length=20, std=2)
-    df = pd.concat([df, bbands], axis=1)
-    
+    # 3. 変化率 (Returns)
     df['returns'] = df['close_price'].pct_change()
     
-    # ターゲット作成（5分後）
+    # 4. ラグ特徴量（直近3分間の動き）
+    for i in range(1, 4):
+        df[f'lag_returns_{i}'] = df['returns'].shift(i)
+
+    # 5. 正解ラベル（5分後の価格が上がったか）
     df['target'] = (df['close_price'].shift(-5) > df['close_price']).astype(int)
+
+    # 計算できない最初の数行を削除
     df.dropna(inplace=True)
+    
     return df
