@@ -1,5 +1,7 @@
 yfinance
 supabase
 pandas
-pandas_ta
-
+lightgbm
+joblib
+scikit-learn
+pandas-ta
