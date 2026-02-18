@@ -1,24 +1,37 @@
-name: FX Data Update
+name: FX AI Pipeline
 
 on:
   schedule:
-    - cron: '*/30 * * * *' # 30分ごとに実行
-  workflow_dispatch:      # 手動実行も可能にする
+    - cron: '*/30 * * * *'  # 30分ごとに自動実行
+  workflow_dispatch:       # ボタン操作で手動実行も可能
 
 jobs:
-  build:
+  run-ai-pipeline:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip' # キャッシュを有効にして実行速度を向上
+
       - name: Install dependencies
         run: |
-          pip install yfinance supabase pandas
-      - name: Run data script
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch Latest Data
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python src/data_loader.py
+
+      - name: Run AI Prediction
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python src/predict.py
