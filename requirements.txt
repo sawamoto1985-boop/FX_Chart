@@ -1,3 +1,5 @@
 yfinance
 supabase
 pandas
+pandas_ta
+
