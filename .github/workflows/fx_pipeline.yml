@@ -1,8 +1,8 @@
-name: FX AI Pipeline
+name: FX AI Pipeline (1m Intervals)
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/5 * * * *'  # 5分ごとに実行
   workflow_dispatch:
 
 jobs:
@@ -28,13 +28,13 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python src/data_loader.py || true
 
-      - name: Train AI Model (頭脳を作成)
+      - name: Train AI Model (その場で学習)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python src/train.py
 
-      - name: Run Prediction (予測を実行)
+      - name: Run 1m Predictions (1分単位の予測)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
