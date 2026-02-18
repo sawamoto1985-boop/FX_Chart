@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # エラーの出る pandas-ta は書かない！
+          # 信頼できる基本ライブラリのみ
           pip install pandas numpy yfinance supabase lightgbm joblib scikit-learn
 
       - name: Run Fetch and Predict
@@ -29,6 +29,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          # 実行前に pandas_ta があるか確認するだけのコマンド
           python src/data_loader.py
           python src/predict.py
