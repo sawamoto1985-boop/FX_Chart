@@ -20,14 +20,22 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          # 信頼できる基本ライブラリのみ
           pip install pandas numpy yfinance supabase lightgbm joblib scikit-learn
 
-      - name: Run Fetch and Predict
+      - name: Fetch Data
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: |
-          python src/data_loader.py
-          python src/predict.py
+        run: python src/data_loader.py || true
+
+      - name: Train AI Model (頭脳を作成)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python src/train.py
+
+      - name: Run Prediction (予測を実行)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python src/predict.py
